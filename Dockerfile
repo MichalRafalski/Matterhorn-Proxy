@@ -12,7 +12,7 @@ RUN apk update && \
     apk add --no-cache openvpn python3 py3-pip bash
 
 # Copy OpenVPN configuration and credentials
-COPY config.ovpn /etc/openvpn/config.ovpn
+COPY *.ovpn /etc/openvpn/
 
 # Set up a Python virtual environment
 RUN python3 -m venv /venv

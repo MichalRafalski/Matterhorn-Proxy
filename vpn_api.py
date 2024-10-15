@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import os
 import signal
 import subprocess
@@ -24,18 +24,28 @@ def get_ip_info():
         return {"error": str(e)}
 
 # Start VPN and update HAProxy to prioritize VPN connection
-@app.route('/vpn-on', methods=['POST'])
+@app.route('/vpn-on', methods=['GET'])
 def vpn_on():
     global vpn_process, using_vpn
+    ovpn_file = request.args.get('file', default=None, type=str)
+    
+    if not ovpn_file:
+        return jsonify({"message": "No OVPN file specified"}), 400
+    
+    ovpn_path = os.path.join('/etc/openvpn', ovpn_file)
+    
+    if not os.path.isfile(ovpn_path):
+        return jsonify({"message": "OVPN file not found"}), 404
+
     if vpn_process is None:
-        vpn_process = subprocess.Popen(['openvpn', '--config', '/etc/openvpn/config.ovpn'])
+        vpn_process = subprocess.Popen(['openvpn', '--config', ovpn_path])
         using_vpn = True
         return jsonify({"message": "VPN started", "ip_info": get_ip_info()}), 200
     else:
         return jsonify({"message": "VPN is already running"}), 400
 
 # Stop VPN and fallback to the default connection
-@app.route('/vpn-off', methods=['POST'])
+@app.route('/vpn-off', methods=['GET'])
 def vpn_off():
     global vpn_process, using_vpn
     if vpn_process:
