@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  vpn_proxy:
+    build: .
+    network_mode: "bridge"  # Use the default bridge networking
+    container_name: vpn_proxy
+    cap_add:
+      - NET_ADMIN  # Required for OpenVPN to modify network settings within the container
+    devices:
+      - /dev/net/tun  # Required for OpenVPN to use TUN/TAP
+    dns:
+      - 8.8.8.8
+    ports:
+      - "2211:2211"  # Map host port 2211 to container port 2211
+      - "8888:8888"  # Map host port 8888 to container port 8888
+    restart: unless-stopped
